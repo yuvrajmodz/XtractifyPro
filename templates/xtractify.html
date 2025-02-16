@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Xtractify Pro+ | Cross Platform Videos Shorts And Reels Downloader</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-content">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 3V15M12 15L17 10M12 15L7 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Xtractify Pro
+      </div>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <section class="hero-section">
+      <h1 class="hero-title">Xtractify Pro+</h1>
+      <p class="hero-subtitle">The fastest and most reliable way to download videos from your favorite platforms</p>
+    </section>
+
+    <section class="platform-section">
+      <div class="platform-buttons">
+        <button class="platform-btn active" data-platform="youtube">
+          <i class="fab fa-youtube" style="color: #ff0000;"></i>
+          <span>YouTube</span>
+        </button>
+        <button class="platform-btn" data-platform="instagram">
+          <i class="fab fa-instagram" style="color: #e4405f;"></i>
+          <span>instagram</span>
+        </button>
+        <button class="platform-btn" data-platform="facebook">
+          <i class="fab fa-facebook" style="color: #1877f2;"></i>
+          <span>Facebook</span>
+        </button>
+      </div>
+
+      <div class="download-section">
+        <div class="input-container">
+          <i class="fas fa-link input-icon"></i>
+          <input type="text" class="url-input" placeholder="Paste YouTube video link" />
+          <button class="paste-btn">Paste</button>
+        </div>
+
+        <button class="download-btn">
+          <i class="fas fa-download"></i>
+          Download Now
+        </button>
+      </div>
+    </section>
+
+    <section class="features-section">
+      <div class="feature-card">
+        <i class="fas fa-bolt feature-icon"></i>
+        <h3 class="feature-title">Lightning Fast</h3>
+        <p class="feature-description">Download your favorite videos in seconds with our optimized technology</p>
+      </div>
+
+      <div class="feature-card">
+        <i class="fas fa-shield-alt feature-icon"></i>
+        <h3 class="feature-title">Secure Downloads</h3>
+        <p class="feature-description">Your data is protected with state-of-the-art security measures</p>
+      </div>
+
+      <div class="feature-card">
+        <i class="fas fa-desktop feature-icon"></i>
+        <h3 class="feature-title">Multi-Platform</h3>
+        <p class="feature-description">Support for all major video platforms in one place</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Xtractify. All rights reserved.</p>
+  </footer>
+
+  <div class="loading">
+    <div class="spinner"></div>
+  </div>
+
+<script>
+const platformBtns = document.querySelectorAll('.platform-btn');
+const urlInput = document.querySelector('.url-input');
+const downloadBtn = document.querySelector('.download-btn');
+const loading = document.querySelector('.loading');
+
+let selectedPlatform = 'youtube';
+
+// Status Message Function (Success / Error)
+function showStatus(success, message) {
+    loading.innerHTML = `
+        <div class="status-message ${success ? 'success' : 'error'}">
+            <div class="status-icon">
+                ${success ? 
+                    '<span class="checkmark">&#10004;</span>'  // ✅ Green Tick
+                    : 
+                    '<span class="crossmark">&#10008;</span>'  // ❌ Red Cross
+                }
+            </div>
+            <p>${message}</p>
+        </div>
+    `;
+
+    loading.classList.add('active');
+
+    setTimeout(() => {
+        loading.style.animation = 'fadeOut 0.5s ease-out forwards';
+        setTimeout(() => {
+            loading.classList.remove('active');
+            loading.style.animation = '';
+        }, 500);
+    }, 2000);
+}
+
+// Platform Selection
+platformBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        platformBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedPlatform = btn.dataset.platform;
+        urlInput.placeholder = `Paste ${selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)} video link`;
+    });
+});
+
+// URL Validation Function
+function isValidUrl(url, platform) {
+    try {
+        const parsedUrl = new URL(url);
+        const hostname = parsedUrl.hostname.toLowerCase();
+        const validDomains = {
+            youtube: ['youtube.com', 'www.youtube.com', 'youtu.be'],
+            instagram: ['instagram.com', 'www.instagram.com'],
+            facebook: ['facebook.com', 'www.facebook.com']
+        };
+
+        return validDomains[platform].some(domain => hostname.includes(domain));
+    } catch (error) {
+        return false;
+    }
+}
+
+// Video Download Function
+async function downloadVideo() {
+    const url = urlInput.value.trim();
+
+    if (!url || !isValidUrl(url, selectedPlatform)) {
+        showStatus(false, 'Invalid URL');
+        return;
+    }
+
+    loading.classList.add('active');
+    loading.innerHTML = '<div class="spinner"></div>'; // Spinner Show
+
+    let platformKey = selectedPlatform === 'youtube' ? 'yt' : selectedPlatform === 'instagram' ? 'ig' : 'fb';
+    let apiUrl = `/download?${platformKey}=${encodeURIComponent(url)}&action=viewinfo`;
+
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+if (data.video_thumbnail && data.video_url) {
+    let videoTitle = "Video Founded"; // Default title for fb
+    if (selectedPlatform === 'youtube' || selectedPlatform === 'facebook' || selectedPlatform === 'instagram') {
+        videoTitle = data.caption.length > 65 ? data.caption.substring(0, 65) + "..." : data.caption;
+    }
+
+    // Fix Instagram Thumbnail
+    let thumbnailUrl = data.video_thumbnail;
+    if (selectedPlatform === 'instagram' && thumbnailUrl.includes("instagram.f")) {
+        thumbnailUrl = thumbnailUrl.split("?")[0]; // Remove query parameters
+    }
+
+            // Thumbnail & Title Show karna
+            loading.innerHTML = `
+                <div class="video-preview">
+                    <img src="${thumbnailUrl}" alt="Thumbnail" class="video-thumbnail">
+                    <p class="video-title">${videoTitle}</p>
+                    <button class="download-now">Download</button>
+                </div>
+            `;
+
+            document.querySelector('.download-now').addEventListener('click', async () => {
+                let a = document.createElement("a");
+                a.href = data.video_url;
+                a.download = "video.mp4";
+                document.body.appendChild(a);
+                
+                // Simulate click
+                let clickEvent = new MouseEvent("click");
+                a.dispatchEvent(clickEvent);
+
+                // Wait until the browser starts downloading
+                setTimeout(() => {
+                    // Success Message Before Hiding
+                    loading.innerHTML = `
+                        <div class="status-message success">
+                            <div class="status-icon">
+                                <span class="checkmark">&#10004;</span>  
+                            </div>
+                            <p>Downloading Successful!</p>
+                        </div>
+                    `;
+
+                    setTimeout(() => {
+                        loading.classList.remove('active');
+                    }, 8000); // 8 sec ke baad hide
+                }, 500);
+
+                document.body.removeChild(a);
+            });
+
+        } else {
+            throw new Error('Invalid Response from Server');
+        }
+    } catch (error) {
+        showStatus(false, 'Download Failed!');
+    }
+}
+
+downloadBtn.addEventListener('click', downloadVideo);
+
+// Paste Button Functionality
+document.querySelector('.paste-btn').addEventListener('click', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        urlInput.value = text;
+
+        const pasteBtn = document.querySelector('.paste-btn');
+        pasteBtn.classList.add('disappear');
+
+        document.querySelector('.input-container').classList.add('has-text');
+
+        setTimeout(() => {
+            pasteBtn.style.display = 'none';
+        }, 300);
+    } catch (err) {
+        alert('Clipboard access not allowed. Please paste manually.');
+    }
+});
+
+// Input Field Events
+urlInput.addEventListener('input', () => {
+    const pasteBtn = document.querySelector('.paste-btn');
+    const inputContainer = document.querySelector('.input-container');
+
+    if (!urlInput.value) {
+        pasteBtn.style.display = 'block';
+        pasteBtn.classList.remove('disappear');
+        inputContainer.classList.remove('has-text');
+
+        setTimeout(() => {
+            pasteBtn.style.opacity = 1;
+        }, 10);
+    }
+});
+</script>
+</body>
+</html>
